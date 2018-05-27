@@ -525,19 +525,8 @@ void ConfigDialog::accept()
 	if (ui->dumpDetailCheckBox->isChecked())
 		config.debug.dumpMode |= DEBUG_DETAIL;
 
-	if (config.generalEmulation.enableCustomSettings != 0 && m_romName != nullptr && strlen(m_romName) != 0) {
-		QString msg(tr("Would you like to save these settings as custom ones for this game: "));
-		msg += QString::fromLatin1(m_romName).toUpper();
-		msg += QString("\n") + tr("If you select Cancel, the game will continue to run with its current custom settings.");
-		QMessageBox msgBox(QMessageBox::Question, tr("Save custom settings"),
-			msg, QMessageBox::Save | QMessageBox::Cancel, this);
-		msgBox.setDefaultButton(QMessageBox::Cancel);
-		msgBox.setButtonText(QMessageBox::Save, tr("Save as custom settings"));
-		msgBox.setButtonText(QMessageBox::Cancel, tr("Cancel"));
-		if (msgBox.exec() == QMessageBox::Save) {
-			saveCustomRomSettings(m_strIniPath, m_romName);
-		}
-	}
+	if (config.generalEmulation.enableCustomSettings != 0 && m_romName != nullptr && strlen(m_romName) != 0)
+		saveCustomRomSettings(m_strIniPath, m_romName);
 
 	writeSettings(m_strIniPath);
 
@@ -576,8 +565,11 @@ void ConfigDialog::on_buttonBox_clicked(QAbstractButton *button)
 		msgBox.setButtonText(QMessageBox::RestoreDefaults, tr("Restore Defaults"));
 		msgBox.setButtonText(QMessageBox::Cancel, tr("Cancel"));
 		if (msgBox.exec() == QMessageBox::RestoreDefaults) {
+			const u32 enableCustomSettings = config.generalEmulation.enableCustomSettings;
 			config.resetToDefaults();
+			config.generalEmulation.enableCustomSettings = enableCustomSettings;
 			_init();
+			setTitle();
 		}
 	}
 }
@@ -710,5 +702,29 @@ void ConfigDialog::on_tabWidget_currentChanged(int tab)
 
 		ui->tabWidget->setCursor(QCursor(Qt::ArrowCursor));
 		m_fontsInited = true;
+	}
+}
+
+void ConfigDialog::on_customSettingsCheckBox_clicked()
+{
+	if (ui->customSettingsCheckBox->isChecked()) {
+		loadCustomRomSettings(m_strIniPath, m_romName);
+		config.generalEmulation.enableCustomSettings = 1;
+	} else {
+		loadSettings(m_strIniPath);
+		config.generalEmulation.enableCustomSettings = 0;
+	}
+	_init();
+	setTitle();
+}
+
+void ConfigDialog::setTitle()
+{
+	if (config.generalEmulation.enableCustomSettings != 0 && m_romName != nullptr && strlen(m_romName) != 0) {
+		QString title(tr("GLideN64 Settings for "));
+		title += QString::fromLatin1(m_romName);
+		setWindowTitle(title);
+	} else {
+		setWindowTitle(tr("GLideN64 Settings"));
 	}
 }

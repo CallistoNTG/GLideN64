@@ -1081,10 +1081,10 @@
             </sizepolicy>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;GLideN64 contains settings for the optimal performance of some games. When this option is checked some options on this tab and the frame buffer tab may be overridden.&lt;/p&gt;&lt;p&gt;[Recommended: &lt;span style=&quot; font-style:italic;&quot;&gt;Checked&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When enabled, all non-default values of settings stored individually for each game.&lt;/p&gt;&lt;p&gt;When game is running, configuration dialog displays individual settings for running game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Note&lt;/span&gt;: GLideN64 already contains settings for the optimal performance of some games. Be careful when altering options on 'Emulation' and 'Frame buffer' tab.&lt;/p&gt;&lt;p&gt;[Recommended: &lt;span style=&quot; font-style:italic;&quot;&gt;Checked&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
-            <string>Use GlideN64 per-game settings</string>
+            <string>Use per-game settings</string>
            </property>
            <property name="checked">
             <bool>true</bool>

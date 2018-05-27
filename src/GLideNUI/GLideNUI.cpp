@@ -6,6 +6,7 @@
 #include "AboutDialog.h"
 #include "ConfigDialog.h"
 #include "Settings.h"
+#include "../Config.h"
 
 #ifdef QT_STATICPLUGIN
 #include <QtPlugin>
@@ -25,6 +26,8 @@ int openConfigDialog(const wchar_t * _strFileName, const char * _romName, bool &
 	initMyResource();
 	QString strIniFileName = QString::fromWCharArray(_strFileName);
 	loadSettings(strIniFileName);
+	if (config.generalEmulation.enableCustomSettings != 0 && _romName != nullptr && strlen(_romName) != 0)
+		loadCustomRomSettings(strIniFileName, _romName);
 
 	int argc = 0;
 	char * argv = 0;
@@ -38,6 +41,7 @@ int openConfigDialog(const wchar_t * _strFileName, const char * _romName, bool &
 
 	w.setIniPath(strIniFileName);
 	w.setRomName(_romName);
+	w.setTitle();
 	w.show();
 	const int res = a.exec();
 	_accepted = w.isAccepted();

@@ -19,6 +19,7 @@ public:
 
 	void setIniPath(const QString & _strIniPath);
 	void setRomName(const char * _romName);
+	void setTitle();
 	bool isAccepted() const { return m_accepted; }
 
 public Q_SLOTS:
@@ -52,6 +53,8 @@ private slots:
 	void on_texCachePathButton_clicked();
 
 	void on_texDumpPathButton_clicked();
+
+	void on_customSettingsCheckBox_clicked();
 
 private:
 	void _init();
