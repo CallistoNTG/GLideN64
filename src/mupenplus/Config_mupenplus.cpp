@@ -297,6 +297,24 @@ void Config_LoadCustomConfig()
 	if (result == M64ERR_SUCCESS) config.frameBufferEmulation.fbInfoReadColorChunk = atoi(value);
 	result = ConfigExternalGetParameter(fileHandle, sectionName, "frameBufferEmulation\\fbInfoReadDepthChunk", value, sizeof(value));
 	if (result == M64ERR_SUCCESS) config.frameBufferEmulation.fbInfoReadDepthChunk = atoi(value);
+	result = ConfigExternalGetParameter(fileHandle, sectionName, "frameBufferEmulation\\EnableOverscan", value, sizeof(value));
+	if (result == M64ERR_SUCCESS) config.frameBufferEmulation.enableOverscan = atoi(value);
+	result = ConfigExternalGetParameter(fileHandle, sectionName, "frameBufferEmulation\\OverscanPalLeft", value, sizeof(value));
+	if (result == M64ERR_SUCCESS) config.frameBufferEmulation.overscanPAL.left = atoi(value);
+	result = ConfigExternalGetParameter(fileHandle, sectionName, "frameBufferEmulation\\OverscanPalRight", value, sizeof(value));
+	if (result == M64ERR_SUCCESS) config.frameBufferEmulation.overscanPAL.right = atoi(value);
+	result = ConfigExternalGetParameter(fileHandle, sectionName, "frameBufferEmulation\\OverscanPalTop", value, sizeof(value));
+	if (result == M64ERR_SUCCESS) config.frameBufferEmulation.overscanPAL.top = atoi(value);
+	result = ConfigExternalGetParameter(fileHandle, sectionName, "frameBufferEmulation\\OverscanPalBottom", value, sizeof(value));
+	if (result == M64ERR_SUCCESS) config.frameBufferEmulation.overscanPAL.bottom = atoi(value);
+	result = ConfigExternalGetParameter(fileHandle, sectionName, "frameBufferEmulation\\OverscanNtscLeft", value, sizeof(value));
+	if (result == M64ERR_SUCCESS) config.frameBufferEmulation.overscanNTSC.left = atoi(value);
+	result = ConfigExternalGetParameter(fileHandle, sectionName, "frameBufferEmulation\\OverscanNtscRight", value, sizeof(value));
+	if (result == M64ERR_SUCCESS) config.frameBufferEmulation.overscanNTSC.right = atoi(value);
+	result = ConfigExternalGetParameter(fileHandle, sectionName, "frameBufferEmulation\\OverscanNtscTop", value, sizeof(value));
+	if (result == M64ERR_SUCCESS) config.frameBufferEmulation.overscanNTSC.top = atoi(value);
+	result = ConfigExternalGetParameter(fileHandle, sectionName, "frameBufferEmulation\\OverscanNtscBottom", value, sizeof(value));
+	if (result == M64ERR_SUCCESS) config.frameBufferEmulation.overscanNTSC.bottom = atoi(value);
 
 	result = ConfigExternalGetParameter(fileHandle, sectionName, "textureFilter\\txFilterMode", value, sizeof(value));
 	if (result == M64ERR_SUCCESS) config.textureFilter.txFilterMode = atoi(value);
