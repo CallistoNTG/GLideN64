@@ -1076,6 +1076,21 @@ void F5INDI_DrawParticle()
 #endif //F5INDI_TexrectGen_Particle_Optimization
 
 static
+void texrectGen_SetPrimColor(u32 _primColor)
+{
+	gDP.primColor.r = _FIXED2FLOATCOLOR(_SHIFTR(_primColor, 24, 8), 8);
+	gDP.primColor.g = _FIXED2FLOATCOLOR(_SHIFTR(_primColor, 16, 8), 8);
+	gDP.primColor.b = _FIXED2FLOATCOLOR(_SHIFTR(_primColor,  8, 8), 8);
+	gDP.primColor.a = _FIXED2FLOATCOLOR(_SHIFTR(_primColor,  0, 8), 8);
+
+	DebugMsg(DEBUG_NORMAL, "gDPSetPrimColor( %i, %i, %i, %i )\n",
+		_SHIFTR(_primColor, 24, 8),
+		_SHIFTR(_primColor, 16, 8),
+		_SHIFTR(_primColor,  8, 8),
+		_SHIFTR(_primColor,  0, 8));
+}
+
+static
 void F5INDI_TexrectGen()
 {
 	const u32* params = CAST_RDRAM(const u32*, RSP.PC[RSP.PCi]);
@@ -1174,14 +1189,7 @@ void F5INDI_TexrectGen()
 			DebugMsg(DEBUG_NORMAL, "gDPSetPrimDepth( %f, %f );\n", gDP.primDepth.z, gDP.primDepth.deltaZ);
 
 			offset = _SHIFTR(vertex[i].flag, 0, 8);
-			const u32 primColor = *CAST_DMEM(const u32*, 0x380 + offset);
-			gDPSetPrimColor(
-				u32(gDP.primColor.m*255.0f),									// m
-				u32(gDP.primColor.l*255.0f),									// l
-				(_SHIFTR(primColor, 24, 8) * _SHIFTR(colorScale, 24, 8)) >> 8,	// r
-				(_SHIFTR(primColor, 16, 8) * _SHIFTR(colorScale, 16, 8)) >> 8,	// g
-				(_SHIFTR(primColor,  8, 8) * _SHIFTR(colorScale,  8, 8)) >> 8,	// b
-				(_SHIFTR(primColor,  0, 8) * _SHIFTR(colorScale,  0, 8)) >> 8);	// a
+			texrectGen_SetPrimColor(*CAST_DMEM(const u32*, 0x380 + offset));
 
 #ifdef F5INDI_TexrectGen_Particle_Optimization
 			F5INDI_AddParticle(ulx, uly, lrx, lry, S, T, dsdx, dtdy);
@@ -1292,13 +1300,7 @@ void F5Naboo_TexrectGen()
 	gDP.primDepth.z = v.z / v.w;
 	gDP.primDepth.deltaZ = 0.0f;
 
-	const u32 primColor = params[7];
-	gDPSetPrimColor(u32(gDP.primColor.m*255.0f),	// m
-					u32(gDP.primColor.l*255.0f),	// l
-					_SHIFTR(primColor, 24, 8),		// r
-					_SHIFTR(primColor, 16, 8),		// g
-					_SHIFTR(primColor, 8, 8),		// b
-					_SHIFTR(primColor, 0, 8));		// a
+	texrectGen_SetPrimColor(params[7]);
 
 	if ((gSP.geometryMode & G_FOG) != 0) {
 		const u32 fogColor = (params[7] & 0xFFFFFF00) | u32(v.a*255.0f);
