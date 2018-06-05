@@ -1248,19 +1248,17 @@ void F3DSWRS_TexrectGen(u32 _w0, u32 _w1)
 	gDP.primDepth.deltaZ = 0.0f;
 
 	const u32 primColor = params[1];
-	gDPSetPrimColor( u32(gDP.primColor.m*255.0f),	// m
-					 u32(gDP.primColor.l*255.0f),	// l
-					 _SHIFTR( primColor, 24, 8 ),	// r
-					 _SHIFTR( primColor, 16, 8 ),	// g
-					 _SHIFTR( primColor,  8, 8 ),	// b
-					 _SHIFTR( primColor,  0, 8 ) );	// a
+	gDP.primColor.r = _FIXED2FLOATCOLOR(_SHIFTR(primColor, 24, 8), 8);
+	gDP.primColor.g = _FIXED2FLOATCOLOR(_SHIFTR(primColor, 16, 8), 8);
+	gDP.primColor.b = _FIXED2FLOATCOLOR(_SHIFTR(primColor,  8, 8), 8);
+	gDP.primColor.a = _FIXED2FLOATCOLOR(_SHIFTR(primColor,  0, 8), 8);
 
 	if ((gSP.geometryMode & G_FOG) != 0) {
 		const u32 fogColor = (params[1] & 0xFFFFFF00) | u32(v.a*255.0f);
-		gDPSetFogColor( _SHIFTR( fogColor, 24, 8 ),		// r
-						_SHIFTR( fogColor, 16, 8 ),		// g
-						_SHIFTR( fogColor,  8, 8 ),		// b
-						_SHIFTR( fogColor,  0, 8 ) );	// a
+		gDPSetFogColor( _SHIFTR( fogColor, 24, 8 ),	// r
+		                _SHIFTR( fogColor, 16, 8 ),	// g
+		                _SHIFTR( fogColor,  8, 8 ),	// b
+		                _SHIFTR( fogColor,  0, 8 ) );	// a
 	}
 
 	gDPTextureRectangle(ulx, uly, lrx, lry, gSP.texture.tile, (s16)S, (s16)T, dsdx, dtdy, flip);
