@@ -331,11 +331,24 @@ void ConfigDialog::setIniPath(const QString & _strIniPath)
 
 	ui->translationsComboBox->insertItems(0, translationLanguages);
 	ui->translationsComboBox->setCurrentIndex(listIndex);
+
+	// Profile
+	ui->profilesComboBox->blockSignals(true);
+	const QStringList aProfiles = getProfiles(m_strIniPath);
+	ui->profilesComboBox->addItems(aProfiles);
+	ui->profilesComboBox->setCurrentIndex(aProfiles.indexOf(getCurrentProfile(m_strIniPath)));
+	ui->profilesComboBox->blockSignals(false);
+	ui->removeProfilePushButton->setDisabled(ui->profilesComboBox->count() < 2);
 }
 
 void ConfigDialog::setRomName(const char * _romName)
 {
 	m_romName = _romName;
+	const bool enable = m_romName == nullptr || strlen(m_romName) == 0;
+	ui->customSettingsCheckBox->setEnabled(enable);
+	ui->profilesComboBox->setEnabled(enable);
+	ui->removeProfilePushButton->setEnabled(enable);
+	ui->addProfilePushButton->setEnabled(enable);
 }
 
 ConfigDialog::ConfigDialog(QWidget *parent, Qt::WindowFlags f) :
@@ -527,8 +540,8 @@ void ConfigDialog::accept()
 
 	if (config.generalEmulation.enableCustomSettings != 0 && m_romName != nullptr && strlen(m_romName) != 0)
 		saveCustomRomSettings(m_strIniPath, m_romName);
-
-	writeSettings(m_strIniPath);
+	else
+		writeSettings(m_strIniPath);
 
 	QDialog::accept();
 }
@@ -726,5 +739,47 @@ void ConfigDialog::setTitle()
 		setWindowTitle(title);
 	} else {
 		setWindowTitle(tr("GLideN64 Settings"));
+	}
+}
+
+void ConfigDialog::on_profilesComboBox_currentIndexChanged(const QString &profile)
+{
+	changeProfile(m_strIniPath, profile);
+	_init();
+}
+
+void ConfigDialog::on_addProfilePushButton_clicked()
+{
+	QString profile = ui->profilesComboBox->currentText();
+	if (getProfiles(m_strIniPath).contains(profile))
+		return;
+	addProfile(m_strIniPath, profile);
+	ui->profilesComboBox->addItem(profile);
+	ui->removeProfilePushButton->setDisabled(false);
+}
+
+void ConfigDialog::on_removeProfilePushButton_clicked()
+{
+	if (ui->profilesComboBox->count() < 2)
+		return;
+
+	QString profile = ui->profilesComboBox->currentText();
+	if (!getProfiles(m_strIniPath).contains(profile))
+		return;
+	QString msg(tr("Are you sure you want to remove profile \""));
+	msg += profile + "\"";
+	QMessageBox msgBox(QMessageBox::Warning, tr("Remove profile"),
+		msg, QMessageBox::Yes | QMessageBox::Cancel, this);
+	msgBox.setDefaultButton(QMessageBox::Cancel);
+	msgBox.setButtonText(QMessageBox::Yes, tr("Yes"));
+	msgBox.setButtonText(QMessageBox::Cancel, tr("Cancel"));
+	if (msgBox.exec() == QMessageBox::Yes) {
+		removeProfile(m_strIniPath, profile);
+		ui->profilesComboBox->blockSignals(true);
+		ui->profilesComboBox->removeItem(ui->profilesComboBox->currentIndex());
+		changeProfile(m_strIniPath, ui->profilesComboBox->itemText(ui->profilesComboBox->currentIndex()));
+		ui->profilesComboBox->blockSignals(false);
+		_init();
+		ui->removeProfilePushButton->setDisabled(ui->profilesComboBox->count() < 2);
 	}
 }
