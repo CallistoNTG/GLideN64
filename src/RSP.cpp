@@ -136,8 +136,10 @@ void RSP_ProcessDList()
 			gSP.matrix.stackSize = 32;
 		gSP.matrix.modelViewi = 0;
 		gSP.status[0] = gSP.status[1] = gSP.status[2] = gSP.status[3] = 0;
-		gSP.changed |= CHANGED_MATRIX | CHANGED_LIGHT | CHANGED_LOOKAT;
+		gSP.geometryMode = 0U;
+		gSP.changed |= CHANGED_MATRIX | CHANGED_LIGHT | CHANGED_LOOKAT | CHANGED_GEOMETRYMODE;
 		gSP.tri_num = 0;
+		gSP.cbfd.advancedLighting = false;
 		gDP.changed &= ~CHANGED_CPU_FB_WRITE;
 		gDPSetTexturePersp(G_TP_PERSP);
 
@@ -154,7 +156,7 @@ void RSP_ProcessDList()
 		if ((uc_start != RSP.uc_start) || (uc_dstart != RSP.uc_dstart))
 			gSPLoadUcodeEx(uc_start, uc_dstart, uc_dsize);
 
-		depthBufferList().setNotCleared();
+		depthBufferList().setCleared(false);
 
 		if (GBI.getMicrocodeType() == ZSortBOSS) {
 			RSP.PC[1] = *(u32*)&DMEM[0xff8];
@@ -179,7 +181,7 @@ void RSP_ProcessDList()
 		break;
 	}
 
-	if(RSP.infloop && REG.SP_STATUS) {
+	if (RSP.infloop && REG.SP_STATUS) {
 		*REG.SP_STATUS &= ~(SP_STATUS_TASKDONE | SP_STATUS_HALT | SP_STATUS_BROKE);
 		return;
 	}
@@ -210,14 +212,6 @@ void RSP_SetDefaultState()
 	gSP.lookat.xyz[0][Y] = gSP.lookat.xyz[1][X] = 1.0f;
 	gSP.lookatEnable = true;
 
-	gSP.objMatrix.A = 1.0f;
-	gSP.objMatrix.B = 0.0f;
-	gSP.objMatrix.C = 0.0f;
-	gSP.objMatrix.D = 1.0f;
-	gSP.objMatrix.X = 0.0f;
-	gSP.objMatrix.Y = 0.0f;
-	gSP.objMatrix.baseScaleX = 1.0f;
-	gSP.objMatrix.baseScaleY = 1.0f;
 	gSP.objRendermode = 0;
 
 	for (int i = 0; i < 4; i++)
@@ -228,6 +222,8 @@ void RSP_SetDefaultState()
 	gSP.matrix.modelView[0][1][1] = 1.0f;
 	gSP.matrix.modelView[0][2][2] = 1.0f;
 	gSP.matrix.modelView[0][3][3] = 1.0f;
+
+	gSP.clipRatio = 2U;
 
 	gDP.otherMode._u64 = 0U;
 	gDP.otherMode.bi_lerp0 = gDP.otherMode.bi_lerp1 = 1;
@@ -303,11 +299,12 @@ void RSP_Init()
 		config.generalEmulation.hacks |= hack_blurPauseScreen | hack_rectDepthBufferCopyCBFD;
 	else if (strstr(RSP.romname, (const char *)"MICKEY USA") != nullptr)
 		config.generalEmulation.hacks |= hack_blurPauseScreen;
-	else if (strstr(RSP.romname, (const char *)"MarioTennis64") != nullptr)
-		config.generalEmulation.hacks |= hack_scoreboardJ;
-	else if (strstr(RSP.romname, (const char *)"MarioTennis") != nullptr)
-		config.generalEmulation.hacks |= hack_scoreboard;
-	else if (strstr(RSP.romname, (const char *)"POKEMON STADIUM 2") != nullptr)
+	else if (strstr(RSP.romname, (const char *)"GOLDENEYE") != nullptr)
+		config.generalEmulation.hacks |= hack_clearAloneDepthBuffer;
+	else if (strstr(RSP.romname, (const char *)"STARCRAFT 64") != nullptr)
+		config.generalEmulation.hacks |= hack_StarCraftBackgrounds;
+	else if (strstr(RSP.romname, (const char *)"POKEMON STADIUM 2") != nullptr ||
+			 strstr(RSP.romname, (const char *)"Bottom of the 9th") != nullptr)
 		config.generalEmulation.hacks |= hack_texrect_shade_alpha;
 	else if (strstr(RSP.romname, (const char *)"THE LEGEND OF ZELDA") != nullptr ||
 			 strstr(RSP.romname, (const char *)"ZELDA MASTER QUEST") != nullptr)
@@ -315,16 +312,18 @@ void RSP_Init()
 	else if (strstr(RSP.romname, (const char *)"DOUBUTSUNOMORI") != nullptr ||
 			 strstr(RSP.romname, (const char *)"ANIMAL FOREST") != nullptr)
 		config.generalEmulation.hacks |= hack_subscreen;
-	else if (strstr(RSP.romname, (const char *)"LEGORacers") != nullptr)
-		config.generalEmulation.hacks |= hack_legoRacers;
+	else if (strstr(RSP.romname, (const char *)"Lode Runner 3D") != nullptr)
+		config.generalEmulation.hacks |= hack_LodeRunner;
 	else if (strstr(RSP.romname, (const char *)"Blast") != nullptr)
 		config.generalEmulation.hacks |= hack_blastCorps;
 	else if (strstr(RSP.romname, (const char *)"MASK") != nullptr) // Zelda MM
 		config.generalEmulation.hacks |= hack_ZeldaMonochrome | hack_ZeldaMM;
 	else if (strstr(RSP.romname, (const char *)"Perfect Dark") != nullptr ||
 			 strstr(RSP.romname, (const char *)"PERFECT DARK") != nullptr)
-		config.generalEmulation.hacks |= hack_rectDepthBufferCopyPD;
+		config.generalEmulation.hacks |= hack_rectDepthBufferCopyPD | hack_clearAloneDepthBuffer;
 	else if (strstr(RSP.romname, (const char *)"Jeremy McGrath Super") != nullptr)
+		config.generalEmulation.hacks |= hack_ModifyVertexXyInShader;
+	else if (strstr(RSP.romname, (const char *)"RAT ATTACK") != nullptr)
 		config.generalEmulation.hacks |= hack_ModifyVertexXyInShader;
 	else if (strstr(RSP.romname, (const char *)"Quake") != nullptr)
 		config.generalEmulation.hacks |= hack_doNotResetOtherModeH|hack_doNotResetOtherModeL;
@@ -345,6 +344,8 @@ void RSP_Init()
 		config.generalEmulation.hacks |= hack_RE2 | hack_ModifyVertexXyInShader | hack_LoadDepthTextures;
 	else if (strstr(RSP.romname, (const char *)"THPS") != nullptr)
 		config.generalEmulation.hacks |= hack_TonyHawk;
+	else if (strstr(RSP.romname, (const char *)"NITRO64") != nullptr)
+		config.generalEmulation.hacks |= hack_WCWNitro;
 
 	api().FindPluginPath(RSP.pluginpath);
 

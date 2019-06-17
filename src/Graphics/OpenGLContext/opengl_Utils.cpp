@@ -44,6 +44,34 @@ bool Utils::isExtensionSupported(const opengl::GLInfo & _glinfo, const char *ext
 	return false;
 }
 
+bool Utils::isEGLExtensionSupported(const char * extension)
+{
+#ifdef EGL
+	const char* where = strchr(extension, ' ');
+	if (where || *extension == '\0')
+		return false;
+
+	const char* extensions = eglQueryString(eglGetDisplay(EGL_DEFAULT_DISPLAY), EGL_EXTENSIONS);
+
+	const char* start = extensions;
+	for (;;) {
+		where = strstr(start, extension);
+		if (where == nullptr)
+			break;
+
+		const char* terminator = where + strlen(extension);
+		if (where == start || *(where - 1) == ' ') if (*terminator == ' ' || *terminator == '\0')
+				return true;
+
+		start = terminator;
+	}
+
+	return false;
+#else
+	return false;
+#endif
+}
+
 
 static
 const char* GLErrorString(GLenum errorCode)
@@ -109,16 +137,16 @@ bool Utils::isFramebufferError()
 		//			printf("FBO Undefined\n");
 		//			break;
 	case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-		LOG(LOG_ERROR, "[GlideN64]: FBO Incomplete Attachment\n");
+		LOG(LOG_ERROR, "[GlideN64]: FBO Incomplete Attachment");
 		break;
 	case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-		LOG(LOG_ERROR, "[GlideN64]: FBO Missing Attachment\n");
+		LOG(LOG_ERROR, "[GlideN64]: FBO Missing Attachment");
 		break;
 		//		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER :
 		//			printf("FBO Incomplete Draw Buffer\n");
 		//			break;
 	case GL_FRAMEBUFFER_UNSUPPORTED:
-		LOG(LOG_ERROR, "[GlideN64]: FBO Unsupported\n");
+		LOG(LOG_ERROR, "[GlideN64]: FBO Unsupported");
 		break;
 	case GL_FRAMEBUFFER_COMPLETE:
 		//LOG(LOG_VERBOSE, "[GlideN64]: FBO OK\n");
@@ -130,7 +158,7 @@ bool Utils::isFramebufferError()
 		//			printf("framebuffer INCOMPLETE_FORMATS\n");
 		//			break;
 	default:
-		LOG(LOG_ERROR, "[GlideN64]: FBO Problem?\n");
+		LOG(LOG_ERROR, "[GlideN64]: FBO Problem?");
 	}
 
 	return e != GL_FRAMEBUFFER_COMPLETE;

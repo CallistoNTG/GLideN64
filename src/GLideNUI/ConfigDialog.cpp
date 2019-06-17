@@ -111,10 +111,13 @@ void ConfigDialog::_init()
 	ui->fullScreenResolutionComboBox->setCurrentIndex(fullscreenMode);
 	ui->fullScreenRefreshRateComboBox->setCurrentIndex(fullscreenRate);
 
+	ui->fxaaCheckBox->toggle();
+	ui->fxaaCheckBox->setChecked(config.video.fxaa != 0);
 	ui->aliasingSlider->setValue(powof(config.video.multisampling));
 	ui->aliasingLabelVal->setText(QString::number(config.video.multisampling));
 	ui->anisotropicSlider->setValue(config.texture.maxAnisotropy);
 	ui->vSyncCheckBox->setChecked(config.video.verticalSync != 0);
+	ui->vThreadedVideoCheckBox->setChecked(config.video.threadedVideo != 0);
 
 	switch (config.texture.bilinearMode) {
 	case BILINEAR_3POINT:
@@ -124,6 +127,7 @@ void ConfigDialog::_init()
 		ui->blnrStandardRadioButton->setChecked(true);
 		break;
 	}
+	ui->halosRemovalCheckBox->setChecked(config.texture.enableHalosRemoval != 0);
 
 	switch (config.texture.screenShotFormat) {
 	case 0:
@@ -140,7 +144,9 @@ void ConfigDialog::_init()
 	ui->enableHWLightingCheckBox->setChecked(config.generalEmulation.enableHWLighting != 0);
 	ui->enableShadersStorageCheckBox->setChecked(config.generalEmulation.enableShadersStorage != 0);
 	ui->customSettingsCheckBox->setChecked(config.generalEmulation.enableCustomSettings != 0);
-	switch (config.generalEmulation.correctTexrectCoords) {
+
+	// 2D graphics settings
+	switch (config.graphics2D.correctTexrectCoords) {
 	case Config::tcDisable:
 		ui->fixTexrectDisableRadioButton->setChecked(true);
 		break;
@@ -151,8 +157,16 @@ void ConfigDialog::_init()
 		ui->fixTexrectForceRadioButton->setChecked(true);
 		break;
 	}
+	switch (config.graphics2D.bgMode) {
+	case Config::BGMode::bgOnePiece:
+		ui->bgModeOnePieceRadioButton->setChecked(true);
+		break;
+	case Config::BGMode::bgStripped:
+		ui->bgModeStrippedRadioButton->setChecked(true);
+		break;
+	}
 	ui->nativeRes2D_checkBox->toggle();
-	ui->nativeRes2D_checkBox->setChecked(config.generalEmulation.enableNativeResTexrects != 0);
+	ui->nativeRes2D_checkBox->setChecked(config.graphics2D.enableNativeResTexrects != 0);
 
 	ui->gammaCorrectionCheckBox->toggle();
 	ui->gammaCorrectionCheckBox->setChecked(config.gammaCorrection.force != 0);
@@ -351,6 +365,7 @@ void ConfigDialog::setRomName(const char * _romName)
 	ui->profilesComboBox->setEnabled(bRomNameIsEmpty);
 	ui->removeProfilePushButton->setEnabled(bRomNameIsEmpty && ui->profilesComboBox->count() > 1);
 	ui->addProfilePushButton->setEnabled(bRomNameIsEmpty);
+	ui->customSettingsWarningFrame->setVisible(!bRomNameIsEmpty && config.generalEmulation.enableCustomSettings != 0);
 }
 
 ConfigDialog::ConfigDialog(QWidget *parent, Qt::WindowFlags f) :
@@ -385,13 +400,16 @@ void ConfigDialog::accept()
 	getFullscreenResolutions(ui->fullScreenResolutionComboBox->currentIndex(), config.video.fullscreenWidth, config.video.fullscreenHeight);
 	getFullscreenRefreshRate(ui->fullScreenRefreshRateComboBox->currentIndex(), config.video.fullscreenRefresh);
 
-	config.video.multisampling = ui->n64DepthCompareCheckBox->isChecked() ? 0 : pow2(ui->aliasingSlider->value());
+	config.video.fxaa = ui->fxaaCheckBox->isChecked() ? 1 : 0;
+	config.video.multisampling = (ui->fxaaCheckBox->isChecked() || ui->n64DepthCompareCheckBox->isChecked()) ? 0 : pow2(ui->aliasingSlider->value());
 	config.texture.maxAnisotropy = ui->anisotropicSlider->value();
 
 	if (ui->blnrStandardRadioButton->isChecked())
 		config.texture.bilinearMode = BILINEAR_STANDARD;
 	else if (ui->blnr3PointRadioButton->isChecked())
 		config.texture.bilinearMode = BILINEAR_3POINT;
+
+	config.texture.enableHalosRemoval = ui->halosRemovalCheckBox->isChecked() ? 1 : 0;
 
 	if (ui->pngRadioButton->isChecked())
 		config.texture.screenShotFormat = 0;
@@ -409,6 +427,8 @@ void ConfigDialog::accept()
 
 	config.video.verticalSync = ui->vSyncCheckBox->isChecked() ? 1 : 0;
 
+	config.video.threadedVideo = ui->vThreadedVideoCheckBox->isChecked() ? 1 : 0;
+
 	// Emulation settings
 	config.generalEmulation.enableLOD = ui->emulateLodCheckBox->isChecked() ? 1 : 0;
 	config.generalEmulation.enableNoise = ui->emulateNoiseCheckBox->isChecked() ? 1 : 0;
@@ -420,13 +440,18 @@ void ConfigDialog::accept()
 	config.gammaCorrection.level = ui->gammaLevelSpinBox->value();
 
 	if (ui->fixTexrectDisableRadioButton->isChecked())
-		config.generalEmulation.correctTexrectCoords = Config::tcDisable;
+		config.graphics2D.correctTexrectCoords = Config::tcDisable;
 	else if (ui->fixTexrectSmartRadioButton->isChecked())
-		config.generalEmulation.correctTexrectCoords = Config::tcSmart;
+		config.graphics2D.correctTexrectCoords = Config::tcSmart;
 	else if (ui->fixTexrectForceRadioButton->isChecked())
-		config.generalEmulation.correctTexrectCoords = Config::tcForce;
+		config.graphics2D.correctTexrectCoords = Config::tcForce;
 
-	config.generalEmulation.enableNativeResTexrects = ui->nativeRes2D_checkBox->isChecked() ? 1 : 0;
+	if (ui->bgModeOnePieceRadioButton->isChecked())
+		config.graphics2D.bgMode = Config::BGMode::bgOnePiece;
+	else if (ui->bgModeStrippedRadioButton->isChecked())
+		config.graphics2D.bgMode = Config::BGMode::bgStripped;
+
+	config.graphics2D.enableNativeResTexrects = ui->nativeRes2D_checkBox->isChecked() ? 1 : 0;
 
 	config.frameBufferEmulation.enable = ui->frameBufferCheckBox->isChecked() ? 1 : 0;
 
@@ -585,6 +610,7 @@ void ConfigDialog::on_buttonBox_clicked(QAbstractButton *button)
 			config.generalEmulation.enableCustomSettings = enableCustomSettings;
 			_init();
 			setTitle();
+			setRomName(m_romName);
 		}
 	}
 }
@@ -720,22 +746,6 @@ void ConfigDialog::on_tabWidget_currentChanged(int tab)
 	}
 }
 
-void ConfigDialog::on_customSettingsCheckBox_clicked()
-{
-	if (m_romName == nullptr)
-		return;
-
-	if (ui->customSettingsCheckBox->isChecked()) {
-		loadCustomRomSettings(m_strIniPath, m_romName);
-		config.generalEmulation.enableCustomSettings = 1;
-	} else {
-		loadSettings(m_strIniPath);
-		config.generalEmulation.enableCustomSettings = 0;
-	}
-	_init();
-	setTitle();
-}
-
 void ConfigDialog::setTitle()
 {
 	if (config.generalEmulation.enableCustomSettings != 0 && m_romName != nullptr) {
@@ -806,4 +816,14 @@ void ConfigDialog::on_removeProfilePushButton_clicked()
 		_init();
 		ui->removeProfilePushButton->setDisabled(ui->profilesComboBox->count() < 2);
 	}
+}
+
+void ConfigDialog::on_fxaaCheckBox_toggled(bool checked)
+{
+	ui->aliasingFrame->setEnabled(!checked && !ui->n64DepthCompareCheckBox->isChecked());
+}
+
+void ConfigDialog::on_n64DepthCompareCheckBox_toggled(bool checked)
+{
+	ui->aliasingFrame->setEnabled(!checked && !ui->fxaaCheckBox->isChecked());
 }

@@ -121,7 +121,7 @@ public:
 
 	void showMessage(std::string _message, Milliseconds _interval);
 
-	void clearDepthBuffer(u32 _ulx, u32 _uly, u32 _lrx, u32 _lry);
+	void clearDepthBuffer();
 
 	void clearColorBuffer(float * _pColor);
 
@@ -131,6 +131,8 @@ public:
 	{
 		return (triangles.vertices[_v0].clip & triangles.vertices[_v1].clip & triangles.vertices[_v2].clip) != 0;
 	}
+
+	bool isRejected(s32 _v0, s32 _v1, s32 _v2) const;
 
 	SPVertex & getVertex(u32 _v) { return triangles.vertices[_v]; }
 
@@ -152,6 +154,8 @@ public:
 	void flush() { m_texrectDrawer.draw(); }
 
 	bool isTexrectDrawerMode() const { return !m_texrectDrawer.isEmpty(); }
+
+	void setBackgroundDrawingMode(bool _mode) { m_bBGMode = _mode; }
 
 private:
 	friend class DisplayWindow;
@@ -204,6 +208,7 @@ private:
 	u32 m_modifyVertices;
 	f32 m_maxLineWidth;
 	bool m_bFlatColors;
+	bool m_bBGMode;
 	TexrectDrawer m_texrectDrawer;
 	OSDMessages m_osdMessages;
 };

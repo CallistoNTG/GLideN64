@@ -174,11 +174,11 @@ void RDP_SetPrimDepth( u32 w0, u32 w1 )
 
 void RDP_SetScissor( u32 w0, u32 w1 )
 {
-	gDPSetScissor( _SHIFTR( w1, 24, 2 ),						// mode
-				   _FIXED2FLOAT( _SHIFTR( w0, 12, 12 ), 2 ),	// ulx
-				   _FIXED2FLOAT( _SHIFTR( w0,  0, 12 ), 2 ),	// uly
-				   _FIXED2FLOAT( _SHIFTR( w1, 12, 12 ), 2 ),	// lrx
-				   _FIXED2FLOAT( _SHIFTR( w1,  0, 12 ), 2 ) );	// lry
+	gDPSetScissor( _SHIFTR( w1, 24,  2 ),	// mode
+				   _SHIFTR( w0, 12, 12 ),	// ulx
+				   _SHIFTR( w0,  0, 12 ),	// uly
+				   _SHIFTR( w1, 12, 12 ),	// lrx
+				   _SHIFTR( w1,  0, 12 ) );	// lry
 }
 
 void RDP_SetConvert( u32 w0, u32 w1 )
@@ -249,10 +249,7 @@ bool _getTexRectParams(u32 & w2, u32 & w3)
 		if (cmd2 == G_RDPHALF_2)
 			texRectMode = gspTexRect;
 	} else if (cmd1 == 0xB3) {
-		if (cmd2 == 0xB2)
-			texRectMode = gspTexRect;
-		else
-			texRectMode = halfTexRect;
+		texRectMode = halfTexRect;
 	} else if (cmd1 == 0xF1)
 		texRectMode = halfTexRect;
 
@@ -299,23 +296,38 @@ void _TexRect( u32 w0, u32 w1, bool flip )
 	u32 w2, w3;
 	if (!_getTexRectParams(w2, w3))
 		return;
-	const u32 ulx = _SHIFTR(w1, 12, 12);
-	const u32 uly = _SHIFTR(w1, 0, 12);
-	const u32 lrx = _SHIFTR(w0, 12, 12);
-	const u32 lry = _SHIFTR(w0, 0, 12);
-	if ((lrx >> 2) < (ulx >> 2) || (lry >> 2) < (uly >> 2))
+	RDP.w0 = w0;
+	RDP.w1 = w1;
+	const s32 ulx = _SHIFTR(w1, 12, 12);
+	const s32 uly = _SHIFTR(w1, 0, 12);
+	const s32 lrx = _SHIFTR(w0, 12, 12);
+	const s32 lry = _SHIFTR(w0, 0, 12);
+	if (lrx < ulx || lry < uly)
 		return;
-	gDPTextureRectangle(
-		_FIXED2FLOAT(ulx, 2),
-		_FIXED2FLOAT(uly, 2),
-		_FIXED2FLOAT(lrx, 2),
-		_FIXED2FLOAT(lry, 2),
-		_SHIFTR(w1, 24, 3),							// tile
-		(s16)_SHIFTR(w2, 16, 16),					// s
-		(s16)_SHIFTR(w2, 0, 16),					// t
-		_FIXED2FLOAT((s16)_SHIFTR(w3, 16, 16), 10),	// dsdx
-		_FIXED2FLOAT((s16)_SHIFTR(w3, 0, 16), 10),	// dsdy
-		flip);
+	if (gDP.otherMode.cycleType == G_CYC_COPY)
+		gDPTextureRectangle(
+			f32(ulx >> 2),
+			f32(uly >> 2),
+			f32(lrx >> 2),
+			f32(lry >> 2),
+			_SHIFTR(w1, 24, 3),							// tile
+			(s16)_SHIFTR(w2, 16, 16),					// s
+			(s16)_SHIFTR(w2, 0, 16),					// t
+			_FIXED2FLOAT((s16)_SHIFTR(w3, 16, 16), 10),	// dsdx
+			_FIXED2FLOAT((s16)_SHIFTR(w3, 0, 16), 10),	// dsdy
+			flip);
+	else
+		gDPTextureRectangle(
+			_FIXED2FLOAT(ulx, 2),
+			_FIXED2FLOAT(uly, 2),
+			_FIXED2FLOAT(lrx, 2),
+			_FIXED2FLOAT(lry, 2),
+			_SHIFTR(w1, 24, 3),							// tile
+			(s16)_SHIFTR(w2, 16, 16),					// s
+			(s16)_SHIFTR(w2, 0, 16),					// t
+			_FIXED2FLOAT((s16)_SHIFTR(w3, 16, 16), 10),	// dsdx
+			_FIXED2FLOAT((s16)_SHIFTR(w3, 0, 16), 10),	// dsdy
+			flip);
 }
 
 void RDP_TexRectFlip( u32 w0, u32 w1 )
@@ -411,7 +423,7 @@ void RDP_Init()
 	GBI.cmd[G_TEXRECT]			= RDP_TexRect;
 	GBI.cmd[G_RDPNOOP]			= RDP_NoOp;
 
-	RDP.w2 = RDP.w3 = 0;
+	RDP.w0 = RDP.w1 = RDP.w2 = RDP.w3 = 0;
 	RDP.cmd_ptr = RDP.cmd_cur = 0;
 }
 
@@ -588,12 +600,12 @@ void RDP_ProcessRDPList()
 			::memcpy(RDP.cmd_data + MAXCMD, RDP.cmd_data, CmdLength[cmd] - (MAXCMD - RDP.cmd_cur) * 4);
 
 		// execute the command
-		u32 w0 = RDP.cmd_data[RDP.cmd_cur+0];
-		u32 w1 = RDP.cmd_data[RDP.cmd_cur+1];
-		RDP.w2 = RDP.cmd_data[RDP.cmd_cur+2];
+		RDP.w0 = RDP.cmd_data[RDP.cmd_cur + 0];
+		RDP.w1 = RDP.cmd_data[RDP.cmd_cur + 1];
+		RDP.w2 = RDP.cmd_data[RDP.cmd_cur + 2];
 		RDP.w3 = RDP.cmd_data[RDP.cmd_cur + 3];
 		RSP.cmd = cmd;
-		LLEcmd[cmd](w0, w1);
+		LLEcmd[cmd](RDP.w0, RDP.w1);
 
 		RDP.cmd_cur = (RDP.cmd_cur + CmdLength[cmd] / 4) & maxCMDMask;
 	}

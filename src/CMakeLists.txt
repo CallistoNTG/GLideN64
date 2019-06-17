@@ -61,6 +61,11 @@ set(GLideN64_SOURCES
   Graphics/CombinerProgram.cpp
   Graphics/ObjectHandle.cpp
   Graphics/OpenGLContext/GLFunctions.cpp
+  Graphics/OpenGLContext/ThreadedOpenGl/opengl_Command.cpp
+  Graphics/OpenGLContext/ThreadedOpenGl/opengl_ObjectPool.cpp
+  Graphics/OpenGLContext/ThreadedOpenGl/opengl_Wrapper.cpp
+  Graphics/OpenGLContext/ThreadedOpenGl/opengl_WrappedFunctions.cpp
+  Graphics/OpenGLContext/ThreadedOpenGl/RingBufferPool.cpp
   Graphics/OpenGLContext/opengl_Attributes.cpp
   Graphics/OpenGLContext/opengl_BufferedDrawer.cpp
   Graphics/OpenGLContext/opengl_BufferManipulationObjectFactory.cpp
@@ -78,6 +83,7 @@ set(GLideN64_SOURCES
   Graphics/OpenGLContext/GLSL/glsl_CombinerProgramBuilder.cpp
   Graphics/OpenGLContext/GLSL/glsl_CombinerProgramImpl.cpp
   Graphics/OpenGLContext/GLSL/glsl_CombinerProgramUniformFactory.cpp
+  Graphics/OpenGLContext/GLSL/glsl_FXAA.cpp
   Graphics/OpenGLContext/GLSL/glsl_ShaderStorage.cpp
   Graphics/OpenGLContext/GLSL/glsl_SpecialShadersFactory.cpp
   Graphics/OpenGLContext/GLSL/glsl_Utils.cpp
@@ -109,27 +115,27 @@ set(GLideN64_SOURCES
 )
 
 #check if we're running on Raspberry Pi
-if(EXISTS "/opt/vc/include/bcm_host.h" AND NOT MESA)
+if(EXISTS "${CMAKE_FIND_ROOT_PATH}/opt/vc/include/bcm_host.h" AND NOT MESA)
   message("bcm_host.h found")
   set(BCMHOST ON)
   set(EGL ON)
-  set(EGL_LIB -lbrcmEGL)
+  set(EGL_LIB -lbrcmEGL -lbrcmGLESv2)
   add_definitions(
     -DVC
   )
   include_directories(
-    "/opt/vc/include"
-    "/opt/vc/include/interface/vcos"
-    "/opt/vc/include/interface/vmcs_host/linux"
-    "/opt/vc/include/interface/vcos/pthreads"
+    "${CMAKE_FIND_ROOT_PATH}/opt/vc/include"
+    "${CMAKE_FIND_ROOT_PATH}/opt/vc/include/interface/vcos"
+    "${CMAKE_FIND_ROOT_PATH}/opt/vc/include/interface/vmcs_host/linux"
+    "${CMAKE_FIND_ROOT_PATH}/opt/vc/include/interface/vcos/pthreads"
   )
   link_directories(
-    "/opt/vc/lib"
-    "/opt/vc/lib/GL"
+    "${CMAKE_FIND_ROOT_PATH}/opt/vc/lib"
+    "${CMAKE_FIND_ROOT_PATH}/opt/vc/lib/GL"
   )
-else(EXISTS "/opt/vc/include/bcm_host.h" AND NOT MESA)
+else(EXISTS "${CMAKE_FIND_ROOT_PATH}/opt/vc/include/bcm_host.h" AND NOT MESA)
   set(EGL_LIB -lEGL)
-endif(EXISTS "/opt/vc/include/bcm_host.h" AND NOT MESA)
+endif(EXISTS "${CMAKE_FIND_ROOT_PATH}/opt/vc/include/bcm_host.h" AND NOT MESA)
 
 if(MUPENPLUSAPI)
   add_definitions(
@@ -141,6 +147,7 @@ if(MUPENPLUSAPI)
 	MupenPlusPluginAPI.cpp
 	mupenplus/Config_mupenplus.cpp
 	mupenplus/CommonAPIImpl_mupenplus.cpp
+	mupenplus/MemoryStatus_mupenplus.cpp
 	mupenplus/MupenPlusAPIImpl.cpp
 	Graphics/OpenGLContext/mupen64plus/mupen64plus_DisplayWindow.cpp
   )
@@ -157,6 +164,7 @@ else(MUPENPLUSAPI)
 	windows/Config_windows.cpp
 	windows/CommonAPIImpl_windows.cpp
 	windows/GLideN64_windows.cpp
+	windows/MemoryStatus_windows.cpp
 	common/GLFunctions.cpp
 	windows/ZilmarAPIImpl_windows.cpp
 	Graphics/OpenGLContext/windows/windows_DisplayWindow.cpp

@@ -12,7 +12,7 @@
 #define L3D				3
 #define L3DEX			4
 #define L3DEX2			5
-#define S2DEX			6
+#define S2DEX_1_07		6
 #define S2DEX2			7
 #define F3DPD			8
 #define F3DDKR			9
@@ -27,13 +27,15 @@
 #define F3DZEX2MM		18
 #define F3DTEXA			19
 #define T3DUX			20
-#define F3DEX2ACCLAIM		21
+#define F3DEX2ACCLAIM	21
 #define F3DAM			22
 #define F3DFLX2			23
 #define ZSortBOSS		24
 #define F5Rogue			25
-#define F5Indi_Naboo		26
-#define NONE			27
+#define F5Indi_Naboo	26
+#define S2DEX_1_03		27
+#define S2DEX_1_05		28
+#define NONE			29
 
 // Fixed point conversion factors
 #define FIXED2FLOATRECIP1	0.5f
@@ -69,28 +71,6 @@
 	(((u32)v & ((0x01 << w) - 1)) << s)
 #define _SHIFTR( v, s, w )	\
 	(((u32)v >> s) & ((0x01 << w) - 1))
-
-// BG flags
-#define	G_BGLT_LOADBLOCK	0x0033
-#define	G_BGLT_LOADTILE		0xfff4
-
-#define	G_BG_FLAG_FLIPS		0x01
-#define	G_BG_FLAG_FLIPT		0x10
-
-// Sprite object render modes
-#define	G_OBJRM_NOTXCLAMP		0x01
-#define	G_OBJRM_XLU				0x02	/* Ignored */
-#define	G_OBJRM_ANTIALIAS		0x04	/* Ignored */
-#define	G_OBJRM_BILERP			0x08
-#define	G_OBJRM_SHRINKSIZE_1	0x10
-#define	G_OBJRM_SHRINKSIZE_2	0x20
-#define	G_OBJRM_WIDEN			0x40
-
-// Sprite texture loading types
-#define	G_OBJLT_TXTRBLOCK	0x00001033
-#define	G_OBJLT_TXTRTILE	0x00fc1034
-#define	G_OBJLT_TLUT		0x00000030
-
 
 // These are all the constant flags
 #define G_ZBUFFER				0x00000001
@@ -235,8 +215,10 @@ extern u32 G_MWO_aLIGHT_8, G_MWO_bLIGHT_8;
 #define G_IM_SIZ_32b	3
 #define G_IM_SIZ_DD		5
 
-#define G_TX_MIRROR		0x1
-#define G_TX_CLAMP		0x2
+#define G_TX_NOMIRROR			0x00	// 0 << 0
+#define G_TX_MIRROR				0x01
+#define G_TX_WRAP				0x00	// 0 << 1
+#define G_TX_CLAMP				0x02
 
 #define G_NOOP					0x00
 
@@ -480,7 +462,7 @@ typedef struct
 typedef struct
 {
 	s16 y, x;
-	u16	flag;
+	u16 flag;
 	s16 z;
 } SWVertex;
 
@@ -493,27 +475,20 @@ struct Light
 
 // GBI commands
 typedef void (*GBIFunc)( u32 w0, u32 w1 );
-//extern GBIFunc GBICmd[256];
-
-struct SpecialMicrocodeInfo
-{
-	u32 type;
-	bool NoN;
-	bool negativeY;
-	u32 crc;
-	const char *text;
-};
 
 struct MicrocodeInfo
 {
-	u32 address, dataAddress;
-	u16 dataSize;
-	u32 type;
-	u32 crc;
-	bool NoN;
-	bool negativeY;
-	bool texturePersp;
-	bool combineMatrices;
+	u32 address = 0;
+	u32 dataAddress = 0;;
+	u16 dataSize = 0;
+	u32 type = NONE;
+	bool NoN = false;
+	bool Rej = false;
+	bool cullBoth = true;
+	bool negativeY = true;
+	bool fast3DPersp = false;
+	bool texturePersp = true;
+	bool combineMatrices = false;
 };
 
 struct GBIInfo
@@ -529,6 +504,8 @@ struct GBIInfo
 	bool isHWLSupported() const;
 	void setHWLSupported(bool _supported);
 	bool isNoN() const { return m_pCurrent != nullptr ? m_pCurrent->NoN : false; }
+	bool isRej() const { return m_pCurrent != nullptr ? m_pCurrent->Rej : false; }
+	bool isCullBoth() const { return m_pCurrent != nullptr ? m_pCurrent->cullBoth : false; }
 	bool isNegativeY() const { return m_pCurrent != nullptr ? m_pCurrent->negativeY : true; }
 	bool isTexturePersp() const { return m_pCurrent != nullptr ? m_pCurrent->texturePersp: true; }
 	bool isCombineMatrices() const { return m_pCurrent != nullptr ? m_pCurrent->combineMatrices: false; }

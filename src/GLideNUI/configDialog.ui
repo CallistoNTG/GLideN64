@@ -35,6 +35,9 @@
        <height>450</height>
       </size>
      </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
      <property name="usesScrollButtons">
       <bool>false</bool>
      </property>
@@ -154,6 +157,16 @@
              </property>
              <property name="text">
               <string>Enable VSync</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="vThreadedVideoCheckBox">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Threaded video can improve performance with poor OpenGL drivers at the cost of very marginal input lag, usually less than half a frame&lt;/p&gt;&lt;p&gt;[Recommended: &lt;span style=&quot; font-style:italic;&quot;&gt;Usually off, unless there are performance issues.&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>Enable threaded video</string>
              </property>
             </widget>
            </item>
@@ -393,9 +406,22 @@
             <number>18</number>
            </property>
            <item>
+            <widget class="QCheckBox" name="fxaaCheckBox">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Fast Approximate Anti-Aliasing&lt;/span&gt;&lt;/p&gt;&lt;p&gt;FXAA is an anti-aliasing algorithm. It works as post-processing filter. FXAA provides decent result, but not as good as with MSAA. The main reason to use FXAA is that it is compatible with &amp;quot;N64-style depth compare&amp;quot; option, while MSAA is not.&lt;/p&gt;&lt;p&gt;Note:&lt;br/&gt;* FXAA adds some blurriness to output image. Some textures, such as text, may look worse with it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>Fast Approximate Anti-Aliasing (FXAA)</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <layout class="QVBoxLayout" name="verticalLayout_21">
              <item>
               <widget class="QFrame" name="aliasingFrame">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Multisample Anti-Aliasing&lt;/span&gt;&lt;/p&gt;&lt;p&gt;MSAA is a standard anti-aliasing technique used in computer graphics to improve image quality. Most modern GPUs support 2×, 4×, 8×, and 16× MSAA samples. Higher values result in better quality, but are slower.&lt;/p&gt;&lt;p&gt;Notes:&lt;br/&gt;* MSAA is incompatible with &amp;quot;N64-style depth compare&amp;quot; option.&lt;/p&gt;&lt;p&gt;* Use of MSAA may cause minor glitches in some games.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
                <layout class="QVBoxLayout" name="verticalLayout_54">
                 <property name="spacing">
                  <number>5</number>
@@ -415,7 +441,7 @@
                 <item>
                  <widget class="QLabel" name="aliasingLabel">
                   <property name="text">
-                   <string>Anti-aliasing:</string>
+                   <string>Multisample Anti-Aliasing (MSAA):</string>
                   </property>
                  </widget>
                 </item>
@@ -446,7 +472,7 @@
                     <item>
                      <widget class="QSlider" name="aliasingSlider">
                       <property name="maximum">
-                       <number>3</number>
+                       <number>4</number>
                       </property>
                       <property name="singleStep">
                        <number>1</number>
@@ -585,7 +611,7 @@
                 <item>
                  <widget class="QLabel" name="aliasingWarningLabel">
                   <property name="text">
-                   <string>Anti-aliasing is not compatible with N64-style depth compare</string>
+                   <string>Multisample anti-aliasing is not compatible with N64-style depth compare</string>
                   </property>
                   <property name="wordWrap">
                    <bool>true</bool>
@@ -773,7 +799,7 @@
                <item>
                 <widget class="QFrame" name="blnrFrame">
                  <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Bilinear filtering&lt;/span&gt;: Textures will use standard PC-style bilinear filtering.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;N64-style 3 point&lt;/span&gt;: Textures will be filtered more like the N64. The result is less smooth but more accurate.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Bilinear filtering&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Standard&lt;/span&gt;: Textures will use standard PC-style bilinear filtering.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;N64-style 3 point&lt;/span&gt;: Textures will be filtered more like the N64. The result is less smooth but more accurate.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;3 point with halos removal&lt;/span&gt;: Same as N64-style 3point, but also removes color outline around transparent textures.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Standard with halos removal&lt;/span&gt;: Same as Standard, but also removes color outline around transparent textures.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_66">
                   <property name="spacing">
@@ -809,6 +835,13 @@
                    <widget class="QRadioButton" name="blnr3PointRadioButton">
                     <property name="text">
                      <string extracomment="3 point bilinear filtering as used by the Nintendo 64.">N64-style 3 point</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="halosRemovalCheckBox">
+                    <property name="text">
+                     <string>Enable halos removal</string>
                     </property>
                    </widget>
                   </item>
@@ -1645,6 +1678,66 @@
               </layout>
              </widget>
             </item>
+            <item>
+             <widget class="QFrame" name="BgModeFrame">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Background is complex macro command used to render large (normally full screen) images. Since background image usually does not fit texture memory, the microcode split it on narrow strips and render one by one. HLE code has two modes to emulate background commands:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;One piece&lt;/span&gt;: Whole background image rendred as one textured rectangle. This method is normally much faster, but the result is not always correct.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Stripped&lt;/span&gt;: This method emulates background commands as close as possible to actual microcode implementation. It is slower but more precise. Another problem: some games may have gaps between rendered strips in high resolution. Use &amp;quot;Render 2D elements in N64 resolution&amp;quot; option to remove the gaps.&lt;/p&gt;&lt;p&gt;[Recommended: &lt;span style=&quot; font-style:italic;&quot;&gt;Game dependent, mostly Stripped&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_5_2">
+               <property name="spacing">
+                <number>3</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="bgModeLabel">
+                 <property name="text">
+                  <string extracomment="Background commands usually used to draw full screen 2D images, but some games use them for all 2D objects.">Backgrounds rendering mode (HLE only):</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QRadioButton" name="bgModeOnePieceRadioButton">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string extracomment="The label for this control is &quot;Backgrounds rendering mode &quot;">One piece</string>
+                 </property>
+                 <attribute name="buttonGroup">
+                  <string notr="true">bgModeButtonGroup</string>
+                 </attribute>
+                </widget>
+               </item>
+               <item>
+                <widget class="QRadioButton" name="bgModeStrippedRadioButton">
+                 <property name="text">
+                  <string extracomment="The label for this control is &quot;Backgrounds rendering mode &quot;">Stripped</string>
+                 </property>
+                 <attribute name="buttonGroup">
+                  <string notr="true">bgModeButtonGroup</string>
+                 </attribute>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
            </layout>
           </widget>
          </item>
@@ -2084,11 +2177,14 @@
                      </property>
                      <item>
                       <widget class="QCheckBox" name="n64DepthCompareCheckBox">
+                       <property name="acceptDrops">
+                        <bool>false</bool>
+                       </property>
                        <property name="toolTip">
-                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The N64 uses a unique method of calculating depth to the camera. When checked, GlideN64 uses shaders to try to emulate these calculations correctly. Not compatible with anti-aliasing. &lt;span style=&quot; font-weight:600;&quot;&gt;Experimental!&lt;/span&gt;&lt;/p&gt;&lt;p&gt;[Recommended: &lt;span style=&quot; font-style:italic;&quot;&gt;Sometimes checked, for a few games&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The N64 uses a unique method of calculating depth to the camera. When checked, GlideN64 uses shaders to try to emulate these calculations correctly. This option fixes many  issues with depth compare, but it is not compatible with Multisample Anti-Aliasing (MSAA). It also may cause slowdown in some games.&lt;/p&gt;&lt;p&gt;[Recommended: &lt;span style=&quot; font-style:italic;&quot;&gt;must be on for some games. Try with every game. &lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                        </property>
                        <property name="text">
-                        <string>Enable N64-style depth compare (experimental)</string>
+                        <string>Enable N64-style depth compare</string>
                        </property>
                       </widget>
                      </item>
@@ -3654,6 +3750,53 @@
     </widget>
    </item>
    <item>
+    <widget class="QFrame" name="customSettingsWarningFrame">
+     <layout class="QHBoxLayout" name="customSettingsWarningLayout">
+      <property name="spacing">
+       <number>9</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="customSettingsWarningIcon">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string notr="true"/>
+        </property>
+        <property name="pixmap">
+         <pixmap resource="icon.qrc">:/Info.ico</pixmap>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="customSettingsWarningLabel">
+        <property name="text">
+         <string>Per-game settings enabled. Settings will be applied only for the currently running game.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok|QDialogButtonBox::RestoreDefaults</set>
@@ -3760,8 +3903,8 @@
      <y>41</y>
     </hint>
     <hint type="destinationlabel">
-     <x>112</x>
-     <y>587</y>
+     <x>123</x>
+     <y>565</y>
     </hint>
    </hints>
   </connection>
@@ -3772,12 +3915,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>566</x>
-     <y>183</y>
+     <x>599</x>
+     <y>218</y>
     </hint>
     <hint type="destinationlabel">
-     <x>413</x>
-     <y>199</y>
+     <x>408</x>
+     <y>234</y>
     </hint>
    </hints>
   </connection>
@@ -3824,8 +3967,8 @@
      <y>386</y>
     </hint>
     <hint type="destinationlabel">
-     <x>591</x>
-     <y>130</y>
+     <x>634</x>
+     <y>165</y>
     </hint>
    </hints>
   </connection>
@@ -3910,22 +4053,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>n64DepthCompareCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>aliasingFrame</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>91</x>
-     <y>386</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>400</x>
-     <y>75</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>frameBufferCheckBox</sender>
    <signal>toggled(bool)</signal>
    <receiver>frameBufferInfoFrame</receiver>
@@ -3936,8 +4063,8 @@
      <y>41</y>
     </hint>
     <hint type="destinationlabel">
-     <x>312</x>
-     <y>584</y>
+     <x>323</x>
+     <y>565</y>
     </hint>
    </hints>
   </connection>
@@ -3964,11 +4091,11 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>99</x>
+     <x>111</x>
      <y>71</y>
     </hint>
     <hint type="destinationlabel">
-     <x>92</x>
+     <x>106</x>
      <y>85</y>
     </hint>
    </hints>
@@ -4028,8 +4155,8 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>149</x>
-     <y>307</y>
+     <x>162</x>
+     <y>232</y>
     </hint>
     <hint type="destinationlabel">
      <x>144</x>
@@ -4040,9 +4167,10 @@
  </connections>
  <buttongroups>
   <buttongroup name="screenshotButtonGroup"/>
-  <buttongroup name="factorButtonGroup"/>
   <buttongroup name="osdButtonGroup"/>
+  <buttongroup name="factorButtonGroup"/>
   <buttongroup name="aspectButtonGroup"/>
+  <buttongroup name="bgModeButtonGroup"/>
   <buttongroup name="fixTexrectCoordsButtonGroup"/>
  </buttongroups>
 </ui>

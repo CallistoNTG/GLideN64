@@ -56,6 +56,7 @@ MY_LOCAL_SRC_FILES :=                                                           
     $(SRCDIR)/common/CommonAPIImpl_common.cpp                                      \
     $(SRCDIR)/mupenplus/CommonAPIImpl_mupenplus.cpp                                \
     $(SRCDIR)/mupenplus/Config_mupenplus.cpp                                       \
+    $(SRCDIR)/mupenplus/MemoryStatus_mupenplus.cpp                                 \
     $(SRCDIR)/mupenplus/MupenPlusAPIImpl.cpp                                       \
     $(SRCDIR)/DepthBufferRender/ClipPolygon.cpp                                    \
     $(SRCDIR)/DepthBufferRender/DepthBufferRender.cpp                              \
@@ -67,6 +68,11 @@ MY_LOCAL_SRC_FILES :=                                                           
     $(SRCDIR)/Graphics/CombinerProgram.cpp                                         \
     $(SRCDIR)/Graphics/ObjectHandle.cpp                                            \
     $(SRCDIR)/Graphics/OpenGLContext/GLFunctions.cpp                               \
+    $(SRCDIR)/Graphics/OpenGLContext/ThreadedOpenGl/opengl_Wrapper.cpp             \
+    $(SRCDIR)/Graphics/OpenGLContext/ThreadedOpenGl/opengl_WrappedFunctions.cpp    \
+    $(SRCDIR)/Graphics/OpenGLContext/ThreadedOpenGl/opengl_Command.cpp             \
+    $(SRCDIR)/Graphics/OpenGLContext/ThreadedOpenGl/opengl_ObjectPool.cpp          \
+    $(SRCDIR)/Graphics/OpenGLContext/ThreadedOpenGl/RingBufferPool.cpp             \
     $(SRCDIR)/Graphics/OpenGLContext/opengl_Attributes.cpp                         \
     $(SRCDIR)/Graphics/OpenGLContext/opengl_BufferedDrawer.cpp                     \
     $(SRCDIR)/Graphics/OpenGLContext/opengl_BufferManipulationObjectFactory.cpp    \
@@ -85,12 +91,15 @@ MY_LOCAL_SRC_FILES :=                                                           
     $(SRCDIR)/Graphics/OpenGLContext/GLSL/glsl_CombinerProgramBuilder.cpp          \
     $(SRCDIR)/Graphics/OpenGLContext/GLSL/glsl_CombinerProgramImpl.cpp             \
     $(SRCDIR)/Graphics/OpenGLContext/GLSL/glsl_CombinerProgramUniformFactory.cpp   \
+    $(SRCDIR)/Graphics/OpenGLContext/GLSL/glsl_FXAA.cpp                            \
     $(SRCDIR)/Graphics/OpenGLContext/GLSL/glsl_ShaderStorage.cpp                   \
     $(SRCDIR)/Graphics/OpenGLContext/GLSL/glsl_SpecialShadersFactory.cpp           \
     $(SRCDIR)/Graphics/OpenGLContext/GLSL/glsl_Utils.cpp                           \
     $(SRCDIR)/Graphics/OpenGLContext/mupen64plus/mupen64plus_DisplayWindow.cpp     \
-    $(SRCDIR)/Graphics/OpenGLContext/GraphicBufferPrivateApi/GraphicBuffer.cpp     \
-    $(SRCDIR)/Graphics/OpenGLContext/GraphicBufferPrivateApi/libhardware.cpp       \
+    $(SRCDIR)/Graphics/OpenGLContext/GraphicBuffer/PrivateApi/GraphicBuffer.cpp    \
+    $(SRCDIR)/Graphics/OpenGLContext/GraphicBuffer/PrivateApi/libhardware.cpp      \
+    $(SRCDIR)/Graphics/OpenGLContext/GraphicBuffer/PublicApi/android_hardware_buffer_compat.cpp     \
+    $(SRCDIR)/Graphics/OpenGLContext/GraphicBuffer/GraphicBufferWrapper.cpp        \
     $(SRCDIR)/uCodes/F3D.cpp                                                       \
     $(SRCDIR)/uCodes/F3DAM.cpp                                                     \
     $(SRCDIR)/uCodes/F3DBETA.cpp                                                   \
@@ -134,7 +143,7 @@ MY_LOCAL_CPPFLAGS := $(COMMON_CPPFLAGS) -std=c++11 -g
 
 MY_LOCAL_LDFLAGS := $(COMMON_LDFLAGS) -Wl,-version-script,$(LOCAL_PATH)/$(SRCDIR)/mupenplus/video_api_export.ver
 
-MY_LOCAL_LDLIBS := -llog -latomic -lEGL
+MY_LOCAL_LDLIBS := -llog -lEGL
 
 ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
     # Use for ARM7a:
@@ -145,7 +154,23 @@ ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
     MY_LOCAL_CFLAGS += -D__NEON_OPT
     MY_LOCAL_CFLAGS += -D__VEC4_OPT -mfpu=neon
 
+else ifeq ($(TARGET_ARCH_ABI), arm64-v8a)
+    # Use for ARM8a:
+    MY_LOCAL_SRC_FILES += $(SRCDIR)/Neon/3DMathNeon.cpp
+    MY_LOCAL_SRC_FILES += $(SRCDIR)/Neon/gSPNeon.cpp
+    MY_LOCAL_SRC_FILES += $(SRCDIR)/Neon/RSP_LoadMatrixNeon.cpp
+    MY_LOCAL_SRC_FILES += $(SRCDIR)/Neon/CRC_OPT_NEON.cpp
+    MY_LOCAL_CFLAGS += -D__NEON_OPT
+    MY_LOCAL_CFLAGS += -D__VEC4_OPT -mfpu=neon
+
 else ifeq ($(TARGET_ARCH_ABI), x86)
+#    MY_LOCAL_CFLAGS += -DX86_ASM
+    MY_LOCAL_CFLAGS += -D__VEC4_OPT
+    MY_LOCAL_SRC_FILES += $(SRCDIR)/3DMath.cpp
+    MY_LOCAL_SRC_FILES += $(SRCDIR)/RSP_LoadMatrix.cpp
+    MY_LOCAL_SRC_FILES += $(SRCDIR)/CRC_OPT.cpp
+
+else ifeq ($(TARGET_ARCH_ABI), x86_64)
 #    MY_LOCAL_CFLAGS += -DX86_ASM
     MY_LOCAL_CFLAGS += -D__VEC4_OPT
     MY_LOCAL_SRC_FILES += $(SRCDIR)/3DMath.cpp

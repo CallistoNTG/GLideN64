@@ -54,13 +54,15 @@ private slots:
 
 	void on_texDumpPathButton_clicked();
 
-	void on_customSettingsCheckBox_clicked();
-
 	void on_profilesComboBox_currentIndexChanged(const QString &arg1);
 
 	void on_addProfilePushButton_clicked();
 
 	void on_removeProfilePushButton_clicked();
+
+	void on_fxaaCheckBox_toggled(bool checked);
+
+	void on_n64DepthCompareCheckBox_toggled(bool checked);
 
 private:
 	void _init();

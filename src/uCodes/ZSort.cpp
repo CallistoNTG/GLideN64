@@ -109,8 +109,13 @@ void ZSort_DrawObject (u8 * _addr, u32 _type)
 		vtx.HWLight = 0;
 		vtx.clip = 0;
 		if (textured != 0) {
-			vtx.s = _FIXED2FLOAT(((s16*)_addr)[4^1], 5 );
-			vtx.t = _FIXED2FLOAT(((s16*)_addr)[5^1], 5 );
+			if (gDP.otherMode.texturePersp != 0) {
+				vtx.s = _FIXED2FLOAT(((s16*)_addr)[4 ^ 1], 5);
+				vtx.t = _FIXED2FLOAT(((s16*)_addr)[5 ^ 1], 5);
+			} else {
+				vtx.s = _FIXED2FLOAT(((s16*)_addr)[4 ^ 1], 6);
+				vtx.t = _FIXED2FLOAT(((s16*)_addr)[5 ^ 1], 6);
+			}
 			vtx.w = Calc_invw(((int*)_addr)[3]) / 31.0f;
 		} else
 			vtx.w = 1.0f;
@@ -180,7 +185,7 @@ void ZSort_Obj( u32 _w0, u32 _w1 )
 
 void ZSort_Interpolate( u32, u32 )
 {
-	LOG(LOG_VERBOSE, "ZSort_Interpolate Ignored\n");
+	LOG(LOG_VERBOSE, "ZSort_Interpolate Ignored");
 }
 
 void ZSort_XFMLight( u32 _w0, u32 _w1 )
@@ -233,7 +238,7 @@ void ZSort_XFMLight( u32 _w0, u32 _w1 )
 
 void ZSort_LightingL( u32, u32 )
 {
-	LOG(LOG_VERBOSE, "ZSort_LightingL Ignored\n");
+	LOG(LOG_VERBOSE, "ZSort_LightingL Ignored");
 }
 
 
@@ -289,7 +294,7 @@ void ZSort_Lighting( u32 _w0, u32 _w1 )
 
 void ZSort_MTXRNSP( u32, u32 )
 {
-	LOG(LOG_VERBOSE, "ZSort_MTXRNSP Ignored\n");
+	LOG(LOG_VERBOSE, "ZSort_MTXRNSP Ignored");
 }
 
 void ZSort_MTXCAT(u32 _w0, u32 _w1)
@@ -386,22 +391,22 @@ void ZSort_MultMPMTX( u32 _w0, u32 _w1 )
 
 void ZSort_LinkSubDL( u32, u32 )
 {
-	LOG(LOG_VERBOSE, "ZSort_LinkSubDL Ignored\n");
+	LOG(LOG_VERBOSE, "ZSort_LinkSubDL Ignored");
 }
 
 void ZSort_SetSubDL( u32, u32 )
 {
-	LOG(LOG_VERBOSE, "ZSort_SetSubDL Ignored\n");
+	LOG(LOG_VERBOSE, "ZSort_SetSubDL Ignored");
 }
 
 void ZSort_WaitSignal( u32, u32 )
 {
-	LOG(LOG_VERBOSE, "ZSort_WaitSignal Ignored\n");
+	LOG(LOG_VERBOSE, "ZSort_WaitSignal Ignored");
 }
 
 void ZSort_SendSignal( u32, u32 )
 {
-	LOG(LOG_VERBOSE, "ZSort_SendSignal Ignored\n");
+	LOG(LOG_VERBOSE, "ZSort_SendSignal Ignored");
 }
 
 static
@@ -452,7 +457,7 @@ void ZSort_MoveMem( u32 _w0, u32 _w1 )
 	break;
 
 	case GZM_OTHERMODE:
-		LOG(LOG_VERBOSE, "MoveMem Othermode Ignored\n");
+		LOG(LOG_VERBOSE, "MoveMem Othermode Ignored");
 	break;
 
 	case GZM_VIEWPORT:   // VIEWPORT
@@ -494,7 +499,7 @@ void ZSort_MoveMem( u32 _w0, u32 _w1 )
 	break;
 
 	default:
-		LOG(LOG_ERROR, "ZSort_MoveMem UNKNOWN %d\n", idx);
+		LOG(LOG_ERROR, "ZSort_MoveMem UNKNOWN %d", idx);
 	}
 
 }
