@@ -251,19 +251,32 @@ void RSP_Init()
 	if (RDRAMSize == 0) {
 #ifdef OS_WINDOWS
 		// Calculate RDRAM size by intentionally causing an access violation
+		//
 		u32 test;
 		try
 		{
-			test = RDRAM[0x007FFFFF] + 1;
+			test = RDRAM[0x00FFFFFF] + 1; //Try 16MB
 		}
-		catch (...)
-		{
+		catch (...) {
 			test = 0;
 		}
-		if (test > 0)
-			RDRAMSize = 0x7FFFFF;
-		else
-			RDRAMSize = 0x3FFFFF;
+		if(test > 0)
+		{
+			RDRAMSize = 0xFFFFFF; //Set 16MB
+		} else {
+			try
+			{
+				test = RDRAM[0x007FFFFF] + 1; //Try 8MB
+			}
+			catch (...)
+			{
+				test = 0;
+			}
+			if (test > 0)
+				RDRAMSize = 0x7FFFFF; //Set 8MB
+			else
+				RDRAMSize = 0x3FFFFF; //Set 4MB
+		}
 #else // OS_WINDOWS
 		RDRAMSize = 1024 * 1024 * 8 - 1;
 #endif // OS_WINDOWS
